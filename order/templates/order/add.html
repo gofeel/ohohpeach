@@ -1,0 +1,179 @@
+{% extends "base.html" %}
+{% load django_bootstrap5 %}
+{% block content %}
+<div class="row">
+  <div class="col-lg-12">
+    <div><h2>판매중</h2></div>
+    {% include 'order/notice.html' %}
+    <form method="post" class="form-horizontal">
+      {% csrf_token %}
+      <input type="hidden" name="sid" value="{{ form.sid.value }}">
+      {% bootstrap_form_errors form type='non_fields' %}
+
+      {% bootstrap_field form.product layout='horizontal' %}
+
+      <div class="row pb-3 mb-3 border-bottom">
+        {% bootstrap_label "수량" label_for="qty" label_class="col-md-2"%}
+        <div class="col-md-3">
+          <select class="form-control{% if form.buyer_contact.errors %} is-invalid{% elif form.is_bound %} is-valid {% endif %}" name="qty">
+            {% for i in "xxxx" %}
+            <option value="{{ forloop.counter }}" {% if form.qty == forloop.counter %}
+                    selected{% endif %}>{{ forloop.counter }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      {% bootstrap_field form.buyer layout='horizontal' %}
+
+      <div class="row mb-3 row">
+        <label class="col-md-2 control-label col-form-label" for="id_buyer_contact" id="buyer_contact_label">주문자 전화번호</label>
+        <div class="col-md-3  has-validation">
+          <input id="buyer_contact_type" name="buyer_contact_type" type="hidden" value="{{ form.buyer_contact_type.value |default_if_none:'0' }}">
+          <input type="text" id="buyer_contact" name="buyer_contact" class="form-control{% if form.buyer_contact.errors %} is-invalid{% elif form.is_bound %} is-valid {% endif %}" placeholder="ex) 01012341234" title="" required="" value="{{ form.buyer_contact.value |default_if_none:'' }}" aria-describedby="inputGroupPrepend3 validationServerUsernameFeedback" >
+          {% if form.buyer_contact.errors %}
+            {% for text in form.buyer_contact.errors %}
+              <div id="validationServerUsernameFeedback" class="invalid-feedback">{{ text|escape }}</div>
+            {% endfor %}
+          {% endif %}
+        </div>
+        <div class="col-md-6 pt-1">
+          <a href="#" class="btn btn-warning btn-sm" id="altermode">전화번호 대신 Email 입력</a> <small>(해외 거주시 클릭)</small>
+        </div>
+      </div>
+
+      <hr/>
+
+      {% bootstrap_field form.sender layout="horizontal" horizontal_field_class="col-md-4" addon_after_class=None addon_after='<a class="btn btn-sm enabler">이름 수정</a>' %}
+      <hr/>
+      {% bootstrap_field form.recipient layout="horizontal" horizontal_field_class="col-md-4" addon_after_class=None addon_after='<a class="btn btn-sm enabler">이름 수정</a>' %}
+      {% bootstrap_field form.recipient_phone_number layout="horizontal" horizontal_field_class="col-md-4" addon_after_class=None addon_after='<a class="btn btn-sm enabler">수정</a>' %}
+
+      <div class="row mb-3">
+        <div class="offset-md-2 col-md-10">
+        <input class="btn btn-primary" type="button" id="set_address"
+           value="우편번호/주소 입력"/>
+        </div>
+      </div>
+      <div class="row mb-3">
+        <div id="wrap"
+         style="display:none;border:1px solid;width:500px;height:300px;margin:5px 0;position:relative">
+        <img src="//t1.daumcdn.net/localimg/localimages/07/postcode/320/close.png"
+           id="btnFoldWrap"
+           style="cursor:pointer;position:absolute;right:0px;top:-1px;z-index:1"
+           onclick="foldDaumPostcode()" alt="접기 버튼" />
+        </div>
+      </div>
+
+      {% bootstrap_field form.recipient_zipcode layout='horizontal' horizontal_field_class="col-md-2"%}
+      {% bootstrap_field form.recipient_base_address layout='horizontal' horizontal_field_class="col-md-7"%}
+      {% bootstrap_field form.recipient_additional_address layout='horizontal' horizontal_field_class="col-md-7"%}
+      <hr/>
+      {% bootstrap_field form.memo layout='horizontal' horizontal_field_class="col-md-7" %}
+      <hr/>
+      <div class="row mb-3">
+        <div class="col-md-4 offset-md-2">
+          <button class="btn btn-primary btn-lg" type="submit">주문하기</button>
+        </div>
+      </div>
+    </div>
+  </form>
+</div>
+{% endblock %}
+{% block script %}
+<!-- Modal -->
+<div class="modal" tabindex="-1" id = "myModal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="myModalLabel">우편번호 찾기</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="postcodebox">
+      </div>
+      <div class="modal-footer">
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script src="https://ssl.daumcdn.net/dmaps/map_js_init/postcode.v2.js"></script>
+
+<script>
+
+  var element_wrap = document.getElementById('postcodebox');
+    function foldDaumPostcode() {
+        // iframe을 넣은 element를 안보이게 한다.
+        element_wrap.style.display = 'none';
+    }
+  $(document).ready(function(){
+    $(".enabler").each(function(i, e){
+      var v = $(this).parent().parent().children().first();
+      if(v.val() === "") {
+        v.prop('readonly', true);
+        $(this).on("click", function(e) {
+          $(this).parent().parent().children().first().prop('readonly', false);
+        });
+      }
+    });
+    $("input[name=recipient_zipcode]").prop('readonly', true);
+    $("input[name=recipient_base_address]").prop('readonly', true);
+    $("input[name=buyer]").on('change', function(e){
+      if($("#id_sender").prop('readonly')) {
+        $("#id_sender").val($(this).val());
+      }
+      if($("#id_recipient").prop('readonly')) {
+        $("#id_recipient").val($(this).val());
+      }
+    });
+    $("input[name=buyer_contact]").on('change', function(e){
+      if($("#id_recipient_phone_number").prop('readonly')) {
+        $("#id_recipient_phone_number").val($(this).val());
+      }
+    });
+    $("input[name=buyer]").on('change', function(e){
+      if($("#id_sender").prop('readonly')) {
+        $("#id_sender").val($(this).val());
+      }
+      if($("#id_recipient").prop('readonly')) {
+        $("#id_recipient").val($(this).val());
+      }
+    });
+    $("#altermode").on("click", function() {
+      $("#buyer_contact").attr("placeholder", "noname@gmail.com");
+      $("#buyer_contact_type").val(1);
+      $("#buyer_contact_label").text("주문자 이메일");
+
+      $("#id_recipient_phone_number").prop("readonly", false);
+      $("#id_recipient").prop("readonly", false);
+      $("#id_recipient_phone_number").val("");
+      $("#id_recipient").val("");
+    });
+
+    $("#set_address").on("click", function() {
+      new daum.Postcode({
+        shorthand: true,
+        oncomplete: function(data) {
+          var fullRoadAddr = data.roadAddress; // 도로명 주소 변수
+
+          $("input[name=recipient_zipcode]").val(data.zonecode);
+          $("input[name=recipient_base_address]").val(fullRoadAddr);
+
+          $("#zip_code").val(data.zonecode);
+          $("#road_address").val(fullRoadAddr);
+
+          if(data.buildingName !== ''){
+            $("input[name=recipient_additional_address").val(data.buildingName + " ");
+          }
+          $('#myModal').modal('hide');
+        },
+        width : '100%',
+        maxSuggestItems : 5
+      }).embed(element_wrap);
+      $('#myModal').modal('show');
+    });
+  });
+</script>
+{% endblock %}

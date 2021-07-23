@@ -1,0 +1,39 @@
+{% extends "base_print.html" %}
+{% block content %}
+<div class="container">
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>연번</th>
+        <th>종류</th>
+        <th>수량</th>
+        <th>받는사람</th>
+        <th>전화번호</th>
+        <th>주소</th>
+        <th>배송메모</th>
+        <th>결제</th>
+        <th>Action</th>
+        <th>메모</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in items %}
+        <tr>
+          <td>{{ item.id }}</td>
+          <td>{{ item.product.call_name }}</td>
+          <td>{{ item.qty }}</td>
+          <td>{{ item.buyer }} / {{ item.recipient }}</td>
+          <td>{{ item.pn }}</td>
+          <td>
+            ({{ item.recipient_zipcode }})<br/>{{ item.recipient_base_address }}<br/>{{ item.recipient_additional_address }}
+          </td>
+          <td>{{ item.shipping_memo|default_if_none:'' }}</td>
+          <td>{% if item.status_payment %}T{% else %}NOOOOO{% endif %}
+          <td><a href="{% url 'order:send-order' item.id %}">send</a></td>
+          <td>{{ item.memo|default_if_none:'' }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

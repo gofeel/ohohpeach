@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% load humanize %}
+{% block content %}
+<div class="container">
+    <h1 class="text-center">🎉 주문 완료 🎉</h1>
+    <h4>다음과 같이 주문이 전달되었습니다.</h4>
+    <div class="row">
+        <div class="col-sm-3"><h4>주문자 / 입금자</h4></div>
+        <div class="col-sm-9"> {{ order.buyer|default_if_none:""}} ({{ order.buyer_contact }}) ({{ order.sender|default_if_none:""}})</div>
+    </div>
+    <div class="row">
+        <div class="col-sm-3"><h4>상품정보</h4></div>
+        <div class="col-sm-9"> {{ order.product.name }}({{ order.product.price|intcomma }}) x {{ order.qty }} box</div>
+    </div>
+    <div class="row">
+        <div class="col-sm-3"><h4>배송 정보 : </h4></div>
+    </div>
+    <div class="row">
+        <div class="offset-sm-3 col-sm-9"> 받는 사람 : {{ order.recipient|default_if_none:"" }}({{ order.recipient_phone_number|default_if_none:""  }})</div>
+    </div>
+    <div class="row">
+        <div class="offset-sm-3 col-sm-9"> {{ order.recipient_base_address|default_if_none:"" }} {{ order.recipient_additional_address|default_if_none:"" }}
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-3"><h4>특이사항/메모</h4></div>
+        <div class="col-sm-9"> {{ order.memo|default_if_none:"" }}</div>
+    </div>
+    <hr/>
+    <div class="row">
+        <div class="col-sm-3"><h4>총액</h4></div>
+        <div class="col-sm-9"> {{ order.sum|intcomma }}</div>
+    </div>
+    {% if order.status_shipping %}
+    <div class="row">
+        <div class="col-sm-3"><h4>주문 상태</h4></div>
+        <div class="col-sm-9"><h4>배송중</h4></div>
+    </div>
+    {% elif order.status_payment %}
+    <div class="row">
+        <div class="col-sm-3"><h4>입금할 곳</h4></div>
+        <div class="col-sm-9"><h4>입금확인완료</h4></div>
+    </div>
+    {% else %}
+    {% include 'order/bank.html' %}
+    {% endif %}
+    <div class="row">
+      <div class="col-sm-12">
+        <a class="btn btn-success" href="{% url 'order:index' %}"> 홈으로</a>
+        <a class="btn btn-primary" href="{% url 'order:add-order' %}">새 주문</a>
+      </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+$(document).ready(function() {
+  $('.cpbutton').tooltip();
+  $('.cpbutton').click(function(){
+    var $temp = $("<input>");
+    $("body").append($temp);
+    var v = $(this).attr("data-v");
+    $temp.val(v).select();
+    document.execCommand("copy");
+    $temp.remove();
+    var title = "복사됨";
+    $(this).attr('title', title).attr('data-bs-original-title', title).tooltip('update').tooltip('show');
+    title = "클립보드로 복사";
+    $(this).attr('title', title).attr('data-bs-original-title', title).tooltip('update');
+  });
+});
+</script>
+{% endblock %}

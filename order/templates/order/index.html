@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+<main>
+  <h1>복숭아</h1>
+  <p class="fs-5 col-md-8">수박이 왔어요 수박 달고 맛있는 복숭아</p>
+  <div class="mb-5">
+    <a href="{% url 'order:add-order' %}" class="btn btn-primary btn-lg px-4"><span class="network-name">주문하기</span></a>
+  </div>
+</main>
+{% endblock %}
